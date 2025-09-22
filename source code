@@ -1,0 +1,39 @@
+// Home Automation: Motion Detection -> Bulb ON -> Auto OFF after delay
+
+const int irSensor1 = 2;   // IR sensor pin
+const int relay1 = 8;      // Relay for Bulb
+const unsigned long bulbOnDuration = 10000; // Bulb ON time in ms (10s)
+
+// Variables for timer
+bool bulbOn = false;
+unsigned long bulbOnTime = 0;
+
+void setup() {
+  pinMode(irSensor1, INPUT);
+  pinMode(relay1, OUTPUT);
+
+  // Relay is active LOW
+  digitalWrite(relay1, HIGH); // Bulb OFF initially
+
+  Serial.begin(9600);
+  Serial.println("Motion-based Home Automation Started");
+}
+
+void loop() {
+  int sensorState = digitalRead(irSensor1);
+
+  // If motion detected (sensor LOW for most IR modules)
+  if (sensorState == LOW && !bulbOn) {
+    bulbOn = true;
+    bulbOnTime = millis();      // Record the time bulb turned on
+    digitalWrite(relay1, LOW);  // Bulb ON
+    Serial.println("Motion detected! Bulb ON");
+  }
+
+  // Check if bulb ON duration has passed
+  if (bulbOn && (millis() - bulbOnTime >= bulbOnDuration)) {
+    bulbOn = false;
+    digitalWrite(relay1, HIGH); // Bulb OFF
+    Serial.println("Bulb OFF (time expired)");
+  }
+}
